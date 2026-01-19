@@ -100,9 +100,9 @@ class AVLTree : public BinaryTree<T> {
       node = rotate_left(node);
     }
   }
-  void insert_recursive(shared_ptr<Node>& curr, const T& val, weak_ptr<Node> parent) override
+  void insert_recursive(shared_ptr<Node>& curr, const T& val, int key, weak_ptr<Node> parent) override
   {
-    BinaryTree<T>::insert_recursive(curr, val, parent);
+    BinaryTree<T>::insert_recursive(curr, val, key, parent);
     if (curr)
     {
       this->updateHeight(curr);

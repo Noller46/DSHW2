@@ -17,6 +17,7 @@ protected:
             weak_ptr<Node> parent;
             shared_ptr<Node> left_son;
             shared_ptr<Node> right_son;
+            int key;
             T data;
             int height;
             int below;
@@ -35,11 +36,6 @@ protected:
     template<typename U>
     static const U& unwrap(const std::unique_ptr<U>& p) { return *p; }
 
-    int keyOf(const T& value) const
-    {
-        return unwrap(value).getId();
-    }
-
     int getHeight(const shared_ptr<Node>& node)const{
         return node? node->height:0;
     }
@@ -52,20 +48,19 @@ protected:
             node->height = 1 + (left_height > right_height ? left_height : right_height);
         }
     }
-    virtual void insert_recursive(shared_ptr<Node>& curr, const T& val, weak_ptr<Node> parent){
+    virtual void insert_recursive(shared_ptr<Node>& curr, const T& val, int key, weak_ptr<Node> parent){
         if (!curr)
         {
             curr = make_shared<Node>(val);
             curr->parent = parent;
             return;
         }
-        int key = keyOf(val);
-        int currKey = keyOf(curr->data);
+        int currKey = curr->key;
 
         if (key < currKey)
-            insert_recursive(curr->left_son, val, curr);
+            insert_recursive(curr->left_son, val, key, curr);
         else if (currKey < key)
-            insert_recursive(curr->right_son, val, curr);
+            insert_recursive(curr->right_son, val, key, curr);
         else
             throw invalid_argument("Already here!");
 
@@ -75,7 +70,7 @@ protected:
     {
         if (!curr)
             throw invalid_argument("Object not in tree!");
-        int currKey = keyOf(curr->data);
+        int currKey = curr->key;
         if (key < currKey)
             remove_recursive(curr->left_son, key);
         else if (currKey < key)
@@ -101,7 +96,7 @@ protected:
                     successor = successor->left_son;
 
                 curr->data = successor->data;
-                remove_recursive(curr->right_son,keyOf(successor->data));
+                remove_recursive(curr->right_son,successor->key);
             }
         }
         curr->below -= 1;
@@ -110,7 +105,7 @@ protected:
     {
         if (!curr)
               throw invalid_argument("Object Not in tree");
-        int currKey = keyOf(curr->data);
+        int currKey = curr->key;
         if (currKey > key)
             return find_recursive(curr->left_son,key);
         if (currKey < key)
@@ -121,9 +116,9 @@ protected:
     BinaryTree():root(nullptr){}
     virtual ~BinaryTree() = default;
     bool isEmpty() const{return !root;}
-    virtual void insert(const T& val)
+    virtual void insert(const T& val, int key)
     {
-        insert_recursive(root, val, weak_ptr<Node>());
+        insert_recursive(root, val, key, weak_ptr<Node>());
     }
     virtual void remove(int key)
     {
@@ -133,6 +128,7 @@ protected:
     {
         return find_recursive(root, key);
     }
+
 
 
     void print_in_order_recursive(const shared_ptr<Node>& node) const {
