@@ -1,43 +1,43 @@
-//
-// Created by yoavf on 08/01/2026.
-//
-#include "AVLTree.h"
 using namespace std;
-#ifndef UNIONFIND_H
-#define UNIONFIND_H
-template <typename G, typename A>
-class UnionFind {
-private:
-    template <typename T>
-    struct Node
-    {
-        shared_ptr<Node> next;
-        T data;
-        explicit Node(T val): data(val){}
-        ~Node() = default;
+#include <memory>
+#include "AVLTree.h"
+#include "HashMap.h"
+
+
+class Set {
+    struct Node {
+        int id;
+        shared_ptr<Hunter> hunterP;
+        shared_ptr<Node> parentP;
+        Node(int id, shared_ptr<Node> parent) : id(id), hunterP(nullptr), parentP(parent) {}
     };
-    AVLTree<shared_ptr<Node<G>>> GroupStorge;
-    AVLTree<shared_ptr<Node<A>>> ArgumentStorge;
+
+    int id;
+    shared_ptr<Node> head;
+    int size;
+    HashMap<Hunter> huntersHash;
+    AVLTree<Squad> squadsTree;
+
 public:
-    UnionFind() = default;
-    int addGroupd() {
-        GroupStorge.insert(make_shared<Node<G>>());
+    Set(int elem_id, OBJ value) : head(Node(elem_id, value, nullptr)), size(1) {}
+    ~Set() = default;
+    Set& find(int elem_id) {
+        Node* current = AVL_Find(elem_id); //sussss
+        Node* original = current;
+        while (current->parent != nullptr) {
+            current = current->parent;
+        }
+        original->parent = current;
+        return current;
     }
-    int addArgument() {
-
+    Set Union(Set s1, Set s2){
+        if (s1->size <= s2->size) {
+            s1->head->parent = s2->head;
+            //AVL_Delete(s1->head);
+            return s2;
+        }
+        s2->head->parent = s1->head;
+        return s1;
+        //AVL_Delete(s2->head);
     }
-    int find(int kye) const {
-        A start = ArgumentStorge.find();
-
-        return kye;
-    }
-    int unite(int group1, int group2) {
-        return group1;
-    }
-
-
 };
-
-
-
-#endif //UNIONFIND_H
