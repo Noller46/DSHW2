@@ -1,44 +1,55 @@
-using namespace std;
+#ifndef MEMBERNODE_H
+#define MEMBERNODE_H
 #include <memory>
-#include "AVLTree.h"
-#include "HashMap.h"
 #include "Hunter.h"
+#include "wet2util.h"
 
 
-class Set {
-    struct Node {
-        int id;
-        shared_ptr<Hunter> hunterP;
-        shared_ptr<Node> parentP;
-        Node(int id, shared_ptr<Node> parent) : id(id), hunterP(nullptr), parentP(parent) {}
-    };
 
-    int id;
-    shared_ptr<Node> head;
-    int size;
-    HashMap<Hunter> huntersHash;
-    AVLTree<Squad> squadsTree;
+struct FindResult  //makeshift pair - find will return
+{
+    class MemberNode* root;
+    NenAbility pathSum;
 
+    FindResult(class MemberNode* r, const NenAbility& sum): root(r),pathSum(sum){}
+};
+
+class MemberNode
+{
 public:
-    Set(int elem_id, OBJ value) : head(Node(elem_id, value, nullptr)), size(1) {}
-    ~Set() = default;
-    Set& find(int elem_id) {
-        Node* current = AVL_Find(elem_id); //sussss
-        Node* original = current;
-        while (current->parent != nullptr) {
-            current = current->parent;
-        }
-        original->parent = current;
-        return current;
-    }
-    Set Union(Set s1, Set s2){
-        if (s1->size <= s2->size) {
-            s1->head->parent = s2->head;
-            //AVL_Delete(s1->head);
-            return s2;
-        }
-        s2->head->parent = s1->head;
-        return s1;
-        //AVL_Delete(s2->head);
+    std::shared_ptr<Hunter> hunter;
+
+    MemberNode* parent;
+
+
+    NenAbility r_nen;  //delta from node to parent, box problem logic/ if root partial sum
+    //the rest are relavant if node is root
+    NenAbility squad_total_nen;
+    int size;
+    int squad_sum_aura; //aura of all squad
+    int squad_fights_cnt; //lazy logic
+
+    explicit MemberNode(const std::shared_ptr<Hunter>& h) : hunter(h), parent(nullptr),r_nen(h->getNenAbility())
+    , squad_total_nen(h->getNenAbility()), size(1), squad_sum_aura(h->getAura()), squad_fights_cnt(0){}
+
+    ~MemberNode() = default;
+
+    FindResult find()
+    {
+        if (parent == nullptr)
+            return FindResult(this, r_nen);
+
+        FindResult res = parent->find();
+
+        parent = res.root;
+
+        r_nen += res.pathSum;
+        NenAbility myTotal = r_nen; //total to root
+        r_nen = r_nen - res.root->r_nen; //delta relarive to root
+
+        return FindResult(parent,myTotal);
     }
 };
+
+
+#endif

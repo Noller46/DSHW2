@@ -12,5 +12,8 @@ class Hunter
     int fightsHad;
 public:
     Hunter(int id, const NenAbility& nen, int aura, int fights): id(id), nenA(nen), aura(aura), fightsHad(fights){}
+
+    int getAura() const {return aura;}
+    NenAbility getNenAbility(){return nenA;}
 };
 #endif //HUNTER_H
