@@ -19,7 +19,7 @@ private:
 
     int* index;
     int* link;
-    int* storge;
+    int* storage;
     shared_ptr<T>* keys;
 
 // int arr[10] = {-1}
@@ -36,25 +36,25 @@ private:
 
         int* old_index = index;
         int* old_link = link;
-        int* old_storge = storge;
+        int* old_storage = storage;
         shared_ptr<T>* old_keys = keys;
         int old_height = height;
 
         index = new int[length];
         link = new int[length];
-        storge = new int[length];
+        storage = new int[length];
         keys = new shared_ptr<T>[length];
         height = 0;
 
         for (int i = 0; i < length/3; i++) {
             if (old_index[old_link[i]] == i && old_link[i] < old_height) {
-                insert(old_storge[i], old_keys[i]);
+                insert(old_storage[i], old_keys[i]);
             }
         }
 
         delete old_index;
         delete old_link;
-        delete old_storge;
+        delete old_storage;
         delete old_keys;
     }
 
@@ -65,10 +65,10 @@ public:
         index = new int[length];
         link = new int[length];
         keys = new int[length];
-        storge = new shared_ptr<T>[length];
+        storage = new shared_ptr<T>[length];
     };
     virtual ~HashMap() {
-        delete[] storge;
+        delete[] storage;
     }
     bool isEmpty() const{return count == 0;}
 
@@ -109,7 +109,7 @@ public:
             height += 1;
         }
         keys[idx] = key;
-        storge[idx] = val;
+        storage[idx] = val;
         count += 1;
     }
     void remove(int key)
@@ -120,7 +120,7 @@ public:
             return;
         }
         keys[idx] = -1;
-        storge[idx] = nullptr;
+        storage[idx] = nullptr;
         count -= 1;
     }
 
@@ -129,7 +129,7 @@ public:
         if (index[link[idx]] != idx || link[idx] >= height || keys[idx] != key) {
             throw invalid_argument("Not found");
         }
-        return *storge[idx];
+        return *storage[idx];
     }
 
     bool contains(int key) {
