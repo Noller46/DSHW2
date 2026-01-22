@@ -9,6 +9,7 @@
 
 class Squad
 {
+public:
     int squadId;
     int experience;
     MemberNode* representative;
@@ -24,7 +25,30 @@ class Squad
 
     const NenAbility& getTotalNen() const
     {
-       
+       if (representative == nullptr)
+       {
+           static NenAbility zero;
+           return zero;
+       }
+        return representative->squad_total_nen;
+    }
+    int getBattleValue()const
+    {
+        int val = this->experience;
+        if (representative != nullptr)
+        {
+            val += getTotalAura();
+            val += getTotalNen().getEffectiveNenAbility();
+        }
+        return val;
+    }
+    bool isEmpty() const
+    {
+        return representative == nullptr;
+    }
+    void addExperience(int num)
+    {
+        experience += num;
     }
 };
 
