@@ -13,7 +13,7 @@ template <typename T>
 class HashMap{
 private:
     int length;
-    int hight;
+    int height;
     int count = 0;
     int num1 = 2;
 
@@ -38,16 +38,16 @@ private:
         int* old_link = link;
         int* old_storge = storge;
         shared_ptr<T>* old_keys = keys;
-        int old_hight = hight;
+        int old_height = height;
 
         index = new int[length];
         link = new int[length];
         storge = new int[length];
         keys = new shared_ptr<T>[length];
-        hight = 0;
+        height = 0;
 
         for (int i = 0; i < length/3; i++) {
-            if (old_index[old_link[i]] == i && old_link[i] < old_hight) {
+            if (old_index[old_link[i]] == i && old_link[i] < old_height) {
                 insert(old_storge[i], old_keys[i]);
             }
         }
@@ -61,7 +61,7 @@ private:
 
 
 public:
-    HashMap(): length(9), hight(0), count(0), num1(2) {
+    HashMap(): length(9), height(0), count(0), num1(2) {
         index = new int[length];
         link = new int[length];
         keys = new int[length];
@@ -77,7 +77,7 @@ public:
         int i;
         while(true) {
             i = hashk(key, k);
-            if (index[link[i]] != i || keys[i] == key || link[i] >= hight) {
+            if (index[link[i]] != i || keys[i] == key || link[i] >= height) {
                 return i;
             }
             k += 1;
@@ -89,7 +89,7 @@ public:
         int i;
         while(true) {
             i = hashk(key, k);
-            if (index[link[i]] != i || keys[i] == -1 || keys[i] == key || link[i] >= hight) {
+            if (index[link[i]] != i || keys[i] == -1 || keys[i] == key || link[i] >= height) {
                 return i;
             }
             k += 1;
@@ -99,14 +99,14 @@ public:
     void put(const T& val, int key)
     {
         int idx = find(key);
-        if (index[link[idx]] == idx && link[idx] < hight && keys[idx] == key) {
+        if (index[link[idx]] == idx && link[idx] < height && keys[idx] == key) {
             throw invalid_argument("Already here!");
         }
         idx = find_e(key);
         if (index[link[idx]] != idx) {
-            link[idx] = hight;
+            link[idx] = height;
             index[link[idx]] = idx;
-            hight += 1;
+            height += 1;
         }
         keys[idx] = key;
         storge[idx] = val;
@@ -115,7 +115,7 @@ public:
     void remove(int key)
     {
         int idx = find(key);
-        if (index[link[idx]] != idx || link[idx] >= hight || keys[idx] != key) {
+        if (index[link[idx]] != idx || link[idx] >= height || keys[idx] != key) {
             throw invalid_argument("Not found");
             return;
         }
@@ -126,7 +126,7 @@ public:
 
     T get(int key) {
         int idx = find(key);
-        if (index[link[idx]] != idx || link[idx] >= hight || keys[idx] != key) {
+        if (index[link[idx]] != idx || link[idx] >= height || keys[idx] != key) {
             throw invalid_argument("Not found");
         }
         return *storge[idx];
@@ -134,7 +134,7 @@ public:
 
     bool contains(int key) {
         int idx = find(key);
-        return index[link[idx]] == idx && link[idx] < hight && keys[idx] == key;
+        return index[link[idx]] == idx && link[idx] < height && keys[idx] == key;
     }
 
     int size(){return count;}
