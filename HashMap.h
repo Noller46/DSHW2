@@ -46,6 +46,7 @@ private:
         delete objects;
         objects = hold->objects;
         count = hold->count;
+
     }
 
 
