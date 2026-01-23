@@ -12,134 +12,118 @@ using namespace std;
 template <typename T>
 class HashMap{
 private:
+    struct Node
+    {
+        shared_ptr<Node> next;
+        int key;
+        T data;
+        Node(): key(-1), data(new T) {}
+        Node(T val, int key): data(val), key(key), next(nullptr){}
+        ~Node() = default;
+    };
+
     int length;
-    int hight;
-    int count = 0;
-    int num1 = 2;
+    int count;
+    Node<T>* objects;
 
-    int* index;
-    int* link;
-    int* storge;
-    shared_ptr<T>* keys;
-
-// int arr[10] = {-1}
-
-    int rem(int key) {
-        return 1 + key % num1;
+    int hash(int key) {
+        return  key % size;
     }
-    int hashk(int key, int k) {
-        return  (key + k*rem(key)) % size;
-    }
-    void resize() {
-        length*=3;
-        num1*=2;
 
-        int* old_index = index;
-        int* old_link = link;
-        int* old_storge = storge;
-        shared_ptr<T>* old_keys = keys;
-        int old_hight = hight;
-
-        index = new int[length];
-        link = new int[length];
-        storge = new int[length];
-        keys = new shared_ptr<T>[length];
-        hight = 0;
-
-        for (int i = 0; i < length/3; i++) {
-            if (old_index[old_link[i]] == i && old_link[i] < old_hight) {
-                insert(old_storge[i], old_keys[i]);
-            }
+    void dive(Node<T> curr, HashMap<T>* hashmap) {
+        hashmap->put(curr.key, curr.data);
+        if (curr->next != nullptr) {
+            dive(curr->next, hashmap);
         }
+    }
 
-        delete old_index;
-        delete old_link;
-        delete old_storge;
-        delete old_keys;
+    void resize() {
+        HashMap hold = HashMap(length*2);
+        for(int i = 0; i < length; i++) {
+            dive(objects[i], hold);
+        }
+        length*=2;
+        delete objects;
+        objects = hold->objects;
+        count = hold->count;
     }
 
 
 
 public:
-    HashMap(): length(9), hight(0), count(0), num1(2) {
-        index = new int[length];
-        link = new int[length];
-        keys = new int[length];
-        storge = new shared_ptr<T>[length];
-    };
-    virtual ~HashMap() {
-        delete[] storge;
+    HashMap(): length(8), count(0) {
+        objects = new Node<T>*[length]();
     }
+
+    explicit HashMap(int len): length(len), count(0) {
+        objects = new Node<T>*[length]();
+    }
+
+    virtual ~HashMap() {
+        delete[] objects;
+    }
+
     bool isEmpty() const{return count == 0;}
 
-    int find (int key) const {
-        int k = 0;
-        int i;
-        while(true) {
-            i = hashk(key, k);
-            if (index[link[i]] != i || keys[i] == key || link[i] >= hight) {
-                return i;
-            }
-            k += 1;
-        }
+    bool traverse(Node<T> curr, int key) {
+        if(curr.key == key){return true;}
+        if(curr->next == nullptr){return false;}
+        return traverse(curr->next, key);
     }
 
-    int find_e (int key) const {
-        int k = 0;
-        int i;
-        while(true) {
-            i = hashk(key, k);
-            if (index[link[i]] != i || keys[i] == -1 || keys[i] == key || link[i] >= hight) {
-                return i;
-            }
-            k += 1;
-        }
+    bool contains (int key) const {
+        int location = hash(key);
+        if(objects[location] == nullptr){return false;}
+        return traverse(objects[location], key);
     }
 
-    void put(const T& val, int key)
+    void insert(Node<T> curr, T data, int key) {
+        if (curr.next == nullptr){curr.next = new Node<T>(data, key); return;}
+        insert(curr->next, data, key);
+    }
+
+    void put(const T& data, int key)
     {
-        int idx = find(key);
-        if (index[link[idx]] == idx && link[idx] < hight && keys[idx] == key) {
-            throw invalid_argument("Already here!");
-        }
-        idx = find_e(key);
-        if (index[link[idx]] != idx) {
-            link[idx] = hight;
-            index[link[idx]] = idx;
-            hight += 1;
-        }
-        keys[idx] = key;
-        storge[idx] = val;
+        if(contains(key)){throw invalid_argument("already exists");}
+        int location = hash(key);
+        insert(objects[location], data, key);
         count += 1;
+        if (((double) count) / length >= 0.75) {
+            resize();
+        }
     }
+
+    void extract(Node<T> curr, int key) {
+        if (curr->next.key == key) {
+                curr->next = curr->next->next;
+        }
+        extract(curr->next, key);
+    }
+
     void remove(int key)
     {
-        int idx = find(key);
-        if (index[link[idx]] != idx || link[idx] >= hight || keys[idx] != key) {
-            throw invalid_argument("Not found");
-            return;
+        if(!contains(key)){throw invalid_argument("not present");}
+        int location = hash(key);
+        if (objects[location].key == key) {
+            next = objects[location].next;
         }
-        keys[idx] = -1;
-        storge[idx] = nullptr;
+        extract(objects[location], key);
         count -= 1;
     }
 
-    T get(int key) {
-        int idx = find(key);
-        if (index[link[idx]] != idx || link[idx] >= hight || keys[idx] != key) {
-            throw invalid_argument("Not found");
-        }
-        return *storge[idx];
+    T locate(Node<T> curr, int key) {
+        if (curr.key == key){return curr.data;}
+        locate(curr->next, key);
     }
 
-    bool contains(int key) {
-        int idx = find(key);
-        return index[link[idx]] == idx && link[idx] < hight && keys[idx] == key;
+    T get(int key) {
+        if(!contains(key)){throw invalid_argument("not present");}
+        int location = hash(key);
+        return extract(objects[location], key);
     }
 
     int size(){return count;}
 
-    void print() const {}
 
 };
 
