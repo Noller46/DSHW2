@@ -23,7 +23,7 @@ public:
 
 
     NenAbility r_nen;  //delta from node to parent, box problem logic/ if root partial sum
-    //the rest are relavant if node is root
+    //the rest are relevant if node is root
     NenAbility squad_total_nen;
     int size;
     int squad_sum_aura; //aura of all squad
