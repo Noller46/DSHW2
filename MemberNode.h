@@ -45,7 +45,7 @@ public:
 
         r_nen += res.pathSum;
         NenAbility myTotal = r_nen; //total to root
-        r_nen = r_nen - res.root->r_nen; //delta relarive to root
+        r_nen -= res.root->r_nen; //delta relative to root
 
         return FindResult(parent,myTotal);
     }
