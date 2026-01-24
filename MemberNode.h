@@ -10,8 +10,9 @@ struct FindResult  //makeshift pair - find will return
 {
     class MemberNode* root;
     NenAbility pathSum;
+    int pathFights;
 
-    FindResult(class MemberNode* r, const NenAbility& sum): root(r),pathSum(sum){}
+    FindResult(class MemberNode* r, const NenAbility& sum, int fights): root(r),pathSum(sum), pathFights(fights){}
 };
 
 class MemberNode
@@ -37,17 +38,22 @@ public:
     FindResult find()
     {
         if (parent == nullptr)
-            return FindResult(this, r_nen);
+            return FindResult(this, r_nen,squad_fights_cnt);
 
         FindResult res = parent->find();
 
         parent = res.root;
 
         r_nen += res.pathSum;
-        NenAbility myTotal = r_nen; //total to root
+        NenAbility myTotalNen = r_nen; //total to root
         r_nen -= res.root->r_nen; //delta relative to root
 
-        return FindResult(parent,myTotal);
+        //same logic
+        squad_fights_cnt += res.pathFights;
+        int myTotalFights = squad_fights_cnt;
+        squad_fights_cnt -= res.root->squad_fights_cnt;
+
+        return FindResult(parent,myTotalNen, myTotalFights);
     }
 };
 
