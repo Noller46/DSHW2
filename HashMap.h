@@ -31,24 +31,70 @@ private:
     shared_ptr<shared_ptr<Node>[]> objects;
 
     int hash(int key) {
+        if (key <= 0) {throw invalid_argument("key bellow 0");}
         return key % length;
     }
 
-    void dive(shared_ptr<Node> curr, HashMap<T>* hashmap) {
-        while (curr != nullptr) {
-            hashmap->put(*(curr->data), curr->key);
+    void resize() {
+        int newLength = length * 2;
+
+        shared_ptr<shared_ptr<Node>[]> newObjects( new shared_ptr<Node>[newLength](),
+            default_delete<shared_ptr<Node>[]>() );
+
+        for (int i = 0; i < length; i++) {
+            shared_ptr<Node> curr = objects[i];
+            while (curr != nullptr) {
+                shared_ptr<Node> nextNode = curr->next;
+
+                int newIndex = curr->key % newLength;
+                if (newIndex < 0) newIndex += newLength;
+
+                curr->next = newObjects[newIndex];
+                newObjects[newIndex] = curr;
+
+                curr = nextNode;
+            }
+        }
+
+        objects = newObjects;
+        length = newLength;
+    }
+
+    bool traverse(shared_ptr<Node> curr, int key) {
+        while (true) {
+            if (curr->key == key) return true;
+            if (curr->next == nullptr) return false;
             curr = curr->next;
         }
     }
 
-    void resize() {
-        HashMap hold = HashMap(length * 2);
-        for (int i = 0; i < length; i++) {
-            dive(objects[i], &hold);
+    int insert(shared_ptr<Node> curr, const T& data, int key) {
+        int depth = 0;
+        while (curr->next != nullptr) {
+            curr = curr->next;
+            depth += 1;
         }
-        length *= 2;
-        objects = hold.objects;
-        count = hold.count;
+        curr->next = make_shared<Node>(data, key);
+        return depth;
+    }
+
+    void extract(shared_ptr<Node> curr, int key) {
+        while (true) {
+            if (curr->next->key == key) {
+                curr->next = curr->next->next;
+                return;
+            }
+            curr = curr->next;
+        }
+    }
+
+    T locate(shared_ptr<Node> curr, int key) {
+        while (true) {
+            if (curr->key == key) {
+                return *(curr->data);
+            }
+            curr = curr->next;
+        }
     }
 
 public:
@@ -72,54 +118,31 @@ public:
         return count == 0;
     }
 
-    bool traverse(shared_ptr<Node> curr, int key) {
-        while (true) {
-            if (curr->key == key) return true;
-            if (curr->next == nullptr) return false;
-            curr = curr->next;
-        }
-    }
-
     bool contains(int key) const {
         int location = hash(key);
         if (objects[location] == nullptr) return false;
         return traverse(objects[location], key);
     }
 
-    void insert(shared_ptr<Node> curr, const T& data, int key) {
-        while (curr->next != nullptr) {
-            curr = curr->next;
-        }
-        curr->next = make_shared<Node>(data, key);
-    }
-
+    // can be optimized if code is slow!!!
     void put(const T& data, int key) {
         if (contains(key)) {
             throw invalid_argument("already exists");
         }
 
         int location = hash(key);
+        int depth = 0;
 
         if (objects[location] == nullptr) {
             objects[location] = make_shared<Node>(data, key);
         } else {
-            insert(objects[location], data, key);
+            depth = insert(objects[location], data, key);
         }
 
         count += 1;
 
-        if ((double)count / length >= 0.75) {
+        if ((double)count / length >= 0.75 || depth > 100) {
             resize();
-        }
-    }
-
-    void extract(shared_ptr<Node> curr, int key) {
-        while (true) {
-            if (curr->next->key == key) {
-                curr->next = curr->next->next;
-                return;
-            }
-            curr = curr->next;
         }
     }
 
@@ -137,15 +160,6 @@ public:
         }
 
         count -= 1;
-    }
-
-    T locate(shared_ptr<Node> curr, int key) {
-        while (true) {
-            if (curr->key == key) {
-                return *(curr->data);
-            }
-            curr = curr->next;
-        }
     }
 
     T get(int key) {
