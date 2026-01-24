@@ -30,7 +30,7 @@ private:
     // array of buckets
     shared_ptr<shared_ptr<Node>[]> objects;
 
-    int hash(int key) {
+    int hash(int key) const {
         if (key <= 0) {throw invalid_argument("key bellow 0");}
         return key % length;
     }
