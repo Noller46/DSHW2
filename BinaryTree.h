@@ -40,6 +40,7 @@ protected:
     int getHeight(const shared_ptr<Node>& node)const{
         return node? node->height:0;
     }
+
     void updateHeight(shared_ptr<Node>& node)
     {
         if (node)

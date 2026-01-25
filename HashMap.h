@@ -58,9 +58,10 @@ private:
 
         objects = newObjects;
         length = newLength;
+
     }
 
-    bool traverse(shared_ptr<Node> curr, int key) {
+    bool traverse(shared_ptr<Node> curr, int key) const {
         while (true) {
             if (curr->key == key) return true;
             if (curr->next == nullptr) return false;
@@ -173,6 +174,18 @@ public:
     int size() {
         return count;
     }
+
+    void print() const {
+        cout << "lenght=" << length << " count=" << count << endl;
+        for (int i = 0; i < length; i++) {
+            shared_ptr<Node> curr = objects[i];
+            while (curr) {
+                cout << "Index=" << hash(curr->key) << " key=" << curr->key << " value=" << *(curr->data) << endl;
+                curr = curr->next;
+            }
+        }
+    }
+
 };
 
 #endif // HASHMAP_H
