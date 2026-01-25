@@ -43,20 +43,8 @@ class AVLTree : public BinaryTree<T> {
       this->root = b;
     }
 
-    a->below = 0;
-    if (a->left_son)
-      a->below += a->left_son->below + 1;
-    if (a->right_son)
-      a->below += a->right_son->below + 1;
-
-    b->below = 0;
-    if (b->left_son)
-      b->below += b->left_son->below + 1;
-    if (b->right_son)
-      b->below += b->right_son->below + 1;
-
-    this->updateHeight(a);
-    this->updateHeight(b);
+    this->updateNodeData(a);
+    this->updateNodeData(b);
 
     return b;
   }
@@ -88,20 +76,8 @@ class AVLTree : public BinaryTree<T> {
       this->root = b;
     }
 
-    c->below = 0;
-    if (c->left_son)
-      c->below += c->left_son->below + 1;
-    if (c->right_son)
-      c->below += c->right_son->below + 1;
-
-    b->below = 0;
-    if (b->left_son)
-      b->below += b->left_son->below + 1;
-    if (b->right_son)
-      b->below += b->right_son->below + 1;
-
-    this->updateHeight(c);
-    this->updateHeight(b);
+    this->updateNodeData(c);
+    this->updateNodeData(b);
 
     return b;
   }
@@ -136,7 +112,6 @@ class AVLTree : public BinaryTree<T> {
     bool ret = BinaryTree<T>::insert_recursive(curr, val, key, parent);
     if (curr)
     {
-      this->updateHeight(curr);
       balance(curr);
     }
     return ret;
@@ -146,7 +121,6 @@ class AVLTree : public BinaryTree<T> {
     bool ret = BinaryTree<T>::remove_recursive(curr, key);
     if (curr)
     {
-      this->updateHeight(curr);
       balance(curr);
     }
     return ret;
