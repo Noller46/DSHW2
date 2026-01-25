@@ -143,7 +143,17 @@ output_t<int> Huntech::get_hunter_fights_number(int hunterId) {
 }
 
 output_t<int> Huntech::get_squad_experience(int squadId) {
-    return 0;
+    if (squadId <= 0)
+        return output_t<int>(StatusType::FAILURE);
+    try
+    {
+        Squad& s = squads.find(squadId);
+        return output_t<int>(s.experience);
+    }
+    catch (...)
+    {
+        return output_t<int>(StatusType::FAILURE);
+    }
 }
 
 output_t<int> Huntech::get_ith_collective_aura_squad(int i) {
