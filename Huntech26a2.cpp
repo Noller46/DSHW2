@@ -55,13 +55,12 @@ StatusType Huntech::add_hunter(int hunterId,
                                int aura,
                                int fightsHad)
 {
-    ///add errors
     Hunter me = Hunter(hunterId, nenType, aura, fightsHad);
-    Squad my_squad = squads.find(TreeKey(0, squadId));
-    TreeKey my_key = TreeKey(my_squad.getTotalAura(), squadId);
-
+    Squad my_squad;
     MemberNode* my_node = new MemberNode(me);
     try {
+        my_squad = squads.find(TreeKey(0, squadId));
+        ///TreeKey my_key = TreeKey(my_squad.getTotalAura(), squadId);
         hunters.put(make_shared<MemberNode>(*my_node),hunterId);
     } catch (const std::invalid_argument&) {
         return StatusType::FAILURE;
@@ -88,8 +87,11 @@ StatusType Huntech::add_hunter(int hunterId,
         my_node->r_nen += parent->squad_total_nen-parent->hunter.getNenAbility();
         parent->squad_total_nen += my_node->squad_total_nen;
     }
-    auraTree.remove(my_key);
-    auraTree.insert(my_squad, TreeKey(my_squad.getTotalAura(), squadId));
+
+    //cout << "check 1" << endl;
+    //auraTree.remove(my_key);
+    //cout << "check 2" << endl;
+    //auraTree.insert(my_squad, TreeKey(my_squad.getTotalAura(), squadId));
     return StatusType::SUCCESS;
 }
 
@@ -190,13 +192,19 @@ StatusType Huntech::force_join(int forcingSquadId, int forcedSquadId) {
         return StatusType::INVALID_INPUT;
     }
 
-    Squad squad_a = squads.find(TreeKey(0,forcingSquadId));
+    Squad squad_a;
+    Squad squad_b;
+    try{
+        squad_a = squads.find(TreeKey(0,forcingSquadId));
+        squad_b = squads.find(TreeKey(0, forcedSquadId));
+    } catch (...) {
+        return StatusType::FAILURE;
+    }
     MemberNode* root_a = squad_a.representative;
-    Squad squad_b = squads.find(TreeKey(0, forcedSquadId));
     MemberNode* root_b = squad_b.representative;
 
-    TreeKey key_a = TreeKey(squad_a.getTotalAura(), forcingSquadId);
-    TreeKey key_b = TreeKey(squad_b.getTotalAura(), forcedSquadId);
+    //TreeKey key_a = TreeKey(squad_a.getTotalAura(), forcingSquadId);
+    //TreeKey key_b = TreeKey(squad_b.getTotalAura(), forcedSquadId);
 
     if (!squad_a.isEmpty() && (squad_b.isEmpty() || squad_a.getBattleValue() > squad_b.getBattleValue())) {
         if (root_a->size>=root_b->size) {
@@ -221,9 +229,9 @@ StatusType Huntech::force_join(int forcingSquadId, int forcedSquadId) {
         }
 
         remove_squad(forcedSquadId);
-        auraTree.remove(key_a);
-        auraTree.remove(key_b);
-        auraTree.insert(squad_a, TreeKey(squad_a.getTotalAura(), forcingSquadId));
+        //auraTree.remove(key_a);
+        //auraTree.remove(key_b);
+        //auraTree.insert(squad_a, TreeKey(squad_a.getTotalAura(), forcingSquadId));
 
         return StatusType::SUCCESS;
     }

@@ -14,6 +14,7 @@ public:
     int experience;
     MemberNode* representative;
 
+    explicit Squad(): squadId(0), experience(0), representative(nullptr){}
     explicit Squad(int id): squadId(id), experience(0), representative(nullptr){}
     explicit Squad(int id, int exp): squadId(id), experience(exp), representative(nullptr){}
     ~Squad() = default;
