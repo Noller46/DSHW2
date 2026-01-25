@@ -53,6 +53,17 @@ StatusType Huntech::add_hunter(int hunterId,
     Hunter me = Hunter(hunterId, nenType, aura, fightsHad);
     Squad my_squad = squads.find(squadId);
     MemberNode* my_node = new MemberNode(me);
+    try {
+        hunters.put(make_shared<MemberNode>(*my_node),hunterId);
+    } catch (const std::invalid_argument&) {
+        return StatusType::FAILURE;
+    } catch (...){
+        return StatusType::ALLOCATION_ERROR;
+    }
+    if (hunterId <= 0 || squadId <= 0 || fightsHad < 0 || aura < 0) {
+        return StatusType::INVALID_INPUT;
+    }
+
 
     if (my_squad.representative == nullptr) {
         my_squad.representative = my_node;
@@ -167,14 +178,16 @@ output_t<NenAbility> Huntech::get_partial_nen_ability(int hunterId) {
 }
 
 StatusType Huntech::force_join(int forcingSquadId, int forcedSquadId) {
-    //acount for empty
+    if (forcingSquadId <= 0 || forcedSquadId <= 0) {
+        return StatusType::INVALID_INPUT;
+    }
+
     Squad squad_a = squads.find(forcingSquadId);
     MemberNode* root_a = squad_a.representative;
     Squad squad_b = squads.find(forcedSquadId);
     MemberNode* root_b = squad_b.representative;
 
-
-    if (squad_a.getBattleValue()>squad_b.getBattleValue()) {
+    if (!squad_a.isEmpty() && (squad_b.isEmpty() || squad_a.getBattleValue() > squad_b.getBattleValue())) {
         if (root_a->size>=root_b->size) {
             root_b->parent = root_a;
             root_a->size += root_b->size;
@@ -192,7 +205,11 @@ StatusType Huntech::force_join(int forcingSquadId, int forcedSquadId) {
             root_a->r_nen -= root_b->r_nen;
 
             root_b->squad_total_nen += root_a->squad_total_nen;
+
+            squad_a.representative = root_b;
         }
+
+        remove_squad(forcedSquadId);
         return StatusType::SUCCESS;
     }
     return StatusType::FAILURE;

@@ -158,11 +158,11 @@ protected:
     }
     T& find(int key)const
     {
-        return find_recursive(root, key).data;
+        return find_recursive(root, key)->data;
     }
 
     T select(int i) const {
-        return select_recursive(root, i).data;
+        return select_recursive(root, i)->data;
     }
 
     void print_in_order_recursive(const shared_ptr<Node>& node) const {
