@@ -20,7 +20,7 @@ private:
 
         Node() : key(-1), data(nullptr), next(nullptr) {}
         Node(const T& val, int key)
-            : key(key), data(make_shared<T>(val)), next(nullptr) {}
+            : next(nullptr), key(key), data(make_shared<T>(val)) {}
         ~Node() = default;
     };
 
