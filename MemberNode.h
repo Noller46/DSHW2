@@ -26,12 +26,13 @@ public:
     //NenAbility r_nen;  //delta from node to parent, box problem logic/ if root partial sum
     //the rest are relevant if node is root
     NenAbility squad_total_nen;
+    NenAbility r_nen;
     int size;
     int squad_sum_aura; //aura of all squad
     int squad_fights_cnt; //lazy logic
 
     explicit MemberNode(Hunter& h) : hunter(h), parent(nullptr), squad_total_nen(h.getNenAbility()),
-    size(1), squad_sum_aura(h.getAura()), squad_fights_cnt(0){}
+    r_nen(h.getNenAbility()), size(1), squad_sum_aura(h.getAura()), squad_fights_cnt(0){}
 
     ~MemberNode() = default;
 
@@ -44,9 +45,9 @@ public:
 
         parent = res.root;
 
-        squad_total_nen += res.pathSum;
-        NenAbility myTotalNen = squad_total_nen; //total to root
-        squad_total_nen -= res.root->squad_total_nen; //delta relative to root
+        r_nen += res.pathSum;
+        NenAbility myTotalNen = r_nen; //total to root
+        r_nen -= res.root->r_nen; //delta relative to root
 
         //same logic
         squad_fights_cnt += res.pathFights;
