@@ -106,7 +106,7 @@ class AVLTree : public BinaryTree<T> {
       node = rotate_left(node);
     }
   }
-  bool insert_recursive(shared_ptr<Node>& curr, const T& val, int key, weak_ptr<Node> parent) override
+  bool insert_recursive(shared_ptr<Node>& curr, const T& val, TreeKey key, weak_ptr<Node> parent) override
   {
     bool ret = BinaryTree<T>::insert_recursive(curr, val, key, parent);
     if (curr)
@@ -115,7 +115,7 @@ class AVLTree : public BinaryTree<T> {
     }
     return ret;
   }
-  bool remove_recursive(shared_ptr<Node>& curr, int key)override
+  bool remove_recursive(shared_ptr<Node>& curr, TreeKey key)override
   {
     bool ret = BinaryTree<T>::remove_recursive(curr, key);
     if (curr)

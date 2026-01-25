@@ -8,6 +8,27 @@
 using namespace std;
 #ifndef BINARYTREE_H
 #define BINARYTREE_H
+
+struct TreeKey {
+    int value;
+    int id;
+
+    explicit TreeKey(int v = 0, int i = 0) : value(v), id(i) {}
+
+    bool operator<(const TreeKey& other) const {
+        if (value != other.value) return value < other.value;
+        return id < other.id;
+    }
+    bool operator>(const TreeKey& other) const { return other < *this; }
+    bool operator==(const TreeKey& other) const { return value == other.value && id == other.id; }
+    bool operator!=(const TreeKey& other) const { return !(*this == other); }
+
+
+    friend std::ostream& operator<<(std::ostream& os, const TreeKey& k) {
+        return os << "{" << k.value << "," << k.id << "}";
+    }
+};
+
 template <typename T>
 class BinaryTree
 {
@@ -17,11 +38,11 @@ protected:
             weak_ptr<Node> parent;
             shared_ptr<Node> left_son;
             shared_ptr<Node> right_son;
-            int key;
+            TreeKey key;
             T data;
             int height;
             int size;
-            explicit Node(T val, int key): key(key), data(val), height(1), size(1){}
+            explicit Node(T val, TreeKey key): key(key), data(val), height(1), size(1){}
             ~Node() = default;
         };
     shared_ptr<Node> root;
@@ -73,7 +94,7 @@ protected:
 */
 
 
-    virtual bool insert_recursive(shared_ptr<Node>& curr, const T& val, int key, weak_ptr<Node> parent){
+    virtual bool insert_recursive(shared_ptr<Node>& curr, const T& val, TreeKey key, weak_ptr<Node> parent){
         if (!curr) {
             curr = make_shared<Node>(val, key);
             curr->parent = parent;
@@ -94,11 +115,11 @@ protected:
         return true;
     }
 
-    virtual bool remove_recursive(shared_ptr<Node>& curr, int key)
+    virtual bool remove_recursive(shared_ptr<Node>& curr, TreeKey key)
     {
         if (!curr)
             throw invalid_argument("Object not in tree!");
-        int currKey = curr->key;
+        TreeKey currKey = curr->key;
         bool res = true;
         if (key < currKey)
             res = remove_recursive(curr->left_son, key);
@@ -133,11 +154,11 @@ protected:
            updateNodeData(curr);
         return res;
     }
-    shared_ptr<Node> find_recursive(const shared_ptr<Node>& curr, int key)const
+    shared_ptr<Node> find_recursive(const shared_ptr<Node>& curr, TreeKey key)const
     {
         if (!curr)
               throw invalid_argument("Object Not in tree");
-        int currKey = curr->key;
+        TreeKey currKey = curr->key;
         if (currKey > key)
             return find_recursive(curr->left_son,key);
         if (currKey < key)
@@ -148,15 +169,15 @@ protected:
     BinaryTree():root(nullptr){}
     virtual ~BinaryTree() = default;
     bool isEmpty() const{return !root;}
-    virtual void insert(const T& val, int key)
+    virtual void insert(const T& val, TreeKey key)
     {
         insert_recursive(root, val, key, weak_ptr<Node>());
     }
-    virtual void remove(int key)
+    virtual void remove(TreeKey key)
     {
         remove_recursive(root,key);
     }
-    T& find(int key)const
+    T& find(TreeKey key)const
     {
         return find_recursive(root, key)->data;
     }
