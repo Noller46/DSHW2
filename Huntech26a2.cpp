@@ -3,11 +3,17 @@
 
 #include "Huntech26a2.h"
 
-Huntech::Huntech() {}
+Huntech::Huntech() = default;
 
-Huntech::~Huntech() {}
+Huntech::~Huntech() = default;
 
 StatusType Huntech::add_squad(int squadId) {
+    if (squadId <= 0)
+        return StatusType::INVALID_INPUT;
+    try
+    {
+        
+    }
     return StatusType::FAILURE;
 }
 
