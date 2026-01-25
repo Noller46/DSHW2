@@ -13,7 +13,8 @@ StatusType Huntech::add_squad(int squadId) {
     try
     {
         Squad newSquad(squadId);
-        squads.insert(newSquad,squadId);
+        squads.insert(newSquad,TreeKey(squadId,0));
+        auraTree.insert(squadId,TreeKey(0,squadId));
         return StatusType::SUCCESS;
     }
     catch (const std::bad_alloc&)
@@ -34,7 +35,12 @@ StatusType Huntech::remove_squad(int squadId) {
         return StatusType::INVALID_INPUT;
     try
     {
-        squads.remove(squadId);
+        Squad& s = squads.find(TreeKey(squadId,0));
+        int currentAura = 0;
+        if (!s.isEmpty())
+            currentAura = s.representative->squad_sum_aura;
+        auraTree.remove(TreeKey(currentAura,squadId));
+        squads.remove(TreeKey(squadId,0));
         return StatusType::SUCCESS;
     }
     catch (...)
@@ -91,8 +97,8 @@ output_t<int> Huntech::squad_duel(int squadId1, int squadId2) {
     }
     try
     {
-        Squad& s1 = squads.find(squadId1);
-        Squad& s2 = squads.find(squadId2);
+        Squad& s1 = squads.find(TreeKey(squadId1,0));
+        Squad& s2 = squads.find(TreeKey(squadId2,0));
         if (s1.isEmpty()||s2.isEmpty())
             return output_t<int>(StatusType::FAILURE);
         int score1 = s1.representative->squad_sum_aura + s1.experience;
@@ -157,10 +163,10 @@ output_t<int> Huntech::get_hunter_fights_number(int hunterId) {
 
 output_t<int> Huntech::get_squad_experience(int squadId) {
     if (squadId <= 0)
-        return output_t<int>(StatusType::FAILURE);
+        return output_t<int>(StatusType::INVALID_INPUT);
     try
     {
-        Squad& s = squads.find(squadId);
+        Squad& s = squads.find(TreeKey(squadId,0));
         return output_t<int>(s.experience);
     }
     catch (...)

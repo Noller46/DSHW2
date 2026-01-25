@@ -27,6 +27,7 @@ private:
     // Here you may add anything you need to implement your Huntech class
     //
     AVLTree<Squad> squads;
+    AVLTree<int> auraTree;
     HashMap<shared_ptr<MemberNode>> hunters;
 
 public:
