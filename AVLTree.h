@@ -9,8 +9,7 @@ using namespace std;
 template<typename T>
 class AVLTree : public BinaryTree<T> {
   private:
-    using Node = typename BinaryTree<T>::Node;
-
+  using Node = typename BinaryTree<T>::Node;
   int getBF(const shared_ptr<Node>& node)const{
     if(!node) return 0;
     return this->getHeight(node->left_son)-this->getHeight(node->right_son);

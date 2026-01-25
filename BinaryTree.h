@@ -169,7 +169,7 @@ protected:
         if (!node) return;
         print_in_order_recursive(node->left_son);
         // Note: Make sure T supports << operator, or print node->key
-        cout << "[ID:" << node->key << " H:" << node->height << " S:" << node->size << "] ";
+        cout << "[ID:" << node->key << " H:" << node->height << " S:" << node->size << " V:" << node->data << "] ";
         print_in_order_recursive(node->right_son);
     }
 
