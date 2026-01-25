@@ -77,10 +77,10 @@ protected:
     shared_ptr<Node> select_recursive(shared_ptr<Node> curr, int k) const {
         if (!curr) return nullptr;
         int leftSize = getSize(curr->left_son);
-
-        if (leftSize == k) return curr;
-        if (leftSize > k)  return select_recursive(curr->left_son, k);
-        return select_recursive(curr->right_son, k - leftSize - 1);
+        int cur_rank = leftSize + 1;
+        if (cur_rank == k) return curr;
+        if (cur_rank > k)  return select_recursive(curr->left_son, k);
+        return select_recursive(curr->right_son, k - cur_rank);
     }
     /*
     template<typename U>
@@ -169,6 +169,10 @@ protected:
     BinaryTree():root(nullptr){}
     virtual ~BinaryTree() = default;
     bool isEmpty() const{return !root;}
+    int getSize() const
+    {
+        return getSize(root);
+    }
     virtual void insert(const T& val, TreeKey key)
     {
         insert_recursive(root, val, key, weak_ptr<Node>());
