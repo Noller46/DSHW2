@@ -20,23 +20,22 @@ protected:
             int key;
             T data;
             int height;
-            int below;
-            explicit Node(T val, int key): data(val), key(key), height(1), below(0){}
+            int size;
+            explicit Node(T val, int key): key(key), data(val), height(1), size(1){}
             ~Node() = default;
         };
     shared_ptr<Node> root;
 
-    /*
-    template<typename U>
-    static const U& unwrap(const U& v) { return v; }
 
-    template<typename U>
-    static const U& unwrap(const std::shared_ptr<U>& p) { return *p; }
+    int getSize(const shared_ptr<Node>& node) const {
+        return node ? node->size : 0;
+    }
 
-    template<typename U>
-    static const U& unwrap(const std::unique_ptr<U>& p) { return *p; }
-*/
-
+    void updateSize(shared_ptr<Node>& node) {
+        if (node) {
+            node->size = 1 + getSize(node->left_son) + getSize(node->right_son);
+        }
+    }
     int getHeight(const shared_ptr<Node>& node)const{
         return node? node->height:0;
     }
@@ -49,26 +48,48 @@ protected:
             node->height = 1 + (left_height > right_height ? left_height : right_height);
         }
     }
+    void updateNodeData(shared_ptr<Node>& node) {
+            updateHeight(node);
+            updateSize(node);
+    }
+    shared_ptr<Node> select_recursive(shared_ptr<Node> curr, int k) const {
+        if (!curr) return nullptr;
+        int leftSize = getSize(curr->left_son);
+
+        if (leftSize == k) return curr;
+        if (leftSize > k)  return select_recursive(curr->left_son, k);
+        return select_recursive(curr->right_son, k - leftSize - 1);
+    }
+    /*
+    template<typename U>
+    static const U& unwrap(const U& v) { return v; }
+
+    template<typename U>
+    static const U& unwrap(const std::shared_ptr<U>& p) { return *p; }
+
+    template<typename U>
+    static const U& unwrap(const std::unique_ptr<U>& p) { return *p; }
+*/
+
+
     virtual bool insert_recursive(shared_ptr<Node>& curr, const T& val, int key, weak_ptr<Node> parent){
         if (!curr) {
             curr = make_shared<Node>(val, key);
             curr->parent = parent;
-            updateHeight(curr);
+            updateNodeData(curr);
             return true;
         }
 
         if (key < curr->key) {
-            if (insert_recursive(curr->left_son, val, key, curr))
-                curr->below++;
+            insert_recursive(curr->left_son, val, key, curr);
         }
         else if (curr->key < key) {
-            if (insert_recursive(curr->right_son, val, key, curr))
-                curr->below++;
+            insert_recursive(curr->right_son, val, key, curr);
         }
         else {
             throw invalid_argument("Already here!");
         }
-        updateHeight(curr);
+        updateNodeData(curr);
         return true;
     }
 
@@ -77,18 +98,11 @@ protected:
         if (!curr)
             throw invalid_argument("Object not in tree!");
         int currKey = curr->key;
+        bool res = true;
         if (key < currKey)
-            if (remove_recursive(curr->left_son, key)) {
-                curr->below -= 1;
-                updateHeight(curr);
-                return true;
-            }
+            res = remove_recursive(curr->left_son, key);
         else if (currKey < key)
-            if (remove_recursive(curr->right_son, key)) {
-                curr->below -= 1;
-                updateHeight(curr);
-                return true;
-            }
+            res = remove_recursive(curr->right_son, key);
         else
         {
             if (!curr->right_son)
@@ -96,16 +110,12 @@ protected:
                 auto child = curr->left_son;
                 if (child) child->parent = curr->parent;
                 curr = child;
-                updateHeight(curr);
-                return true;
             }
             else if (!curr->left_son)
             {
                 auto child = curr->right_son;
                 if (child) child->parent = curr->parent;
                 curr = child;
-                updateHeight(curr);
-                return true;
             }
             else
             {
@@ -115,14 +125,12 @@ protected:
 
                 curr->data = successor->data;
                 curr->key = successor->key;
-                if (remove_recursive(curr->right_son,successor->key)) {
-                    curr->below--;
-                    updateHeight(curr);
-                    return true;
-                }
+                res = remove_recursive(curr->right_son,successor->key);
             }
         }
-        throw invalid_argument("Unexpected error");
+       if (curr)
+           updateNodeData(curr);
+        return res;
     }
     shared_ptr<Node> find_recursive(const shared_ptr<Node>& curr, int key)const
     {
@@ -152,16 +160,20 @@ protected:
         return find_recursive(root, key);
     }
 
-
+    shared_ptr<Node> select(int i) const {
+        return select_recursive(root, i);
+    }
 
     void print_in_order_recursive(const shared_ptr<Node>& node) const {
         if (!node) return;
         print_in_order_recursive(node->left_son);
-        cout << node->data << "(H:" << node->height << ") ";
+        // Note: Make sure T supports << operator, or print node->key
+        cout << "[ID:" << node->key << " H:" << node->height << " S:" << node->size << "] ";
         print_in_order_recursive(node->right_son);
     }
+
     void print() const {
-        cout << "Tree (In-Order, Sorted by ID): \n";
+        cout << "Tree Structure: ";
         print_in_order_recursive(root);
         cout << endl;
     }
