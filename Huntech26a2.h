@@ -43,7 +43,29 @@ public:
                           int squadId,
                           const NenAbility &nenType,
                           int aura,
-                          int fightsHad);
+                          int fightsHad) {
+        ///add errors
+        Hunter me = Hunter(hunterId, nenType, aura, fightsHad);
+        Squad my_squad = squads.find(squadId);
+        MemberNode* my_node = new MemberNode(me);
+        if (my_squad.representative == nullptr) {
+            my_squad.representative = my_node;
+            my_node->squad_sum_aura = aura;
+            my_node->squad_total_nen += me.getNenAbility();
+            return StatusType::SUCCESS;
+        }
+        else {
+            MemberNode* parent = my_squad.representative;
+            my_node->parent = parent;
+            parent->size += my_node->size;
+            parent->squad_sum_aura += aura;
+            parent->squad_total_nen += me.getNenAbility();
+            my_node->squad_total_nen = parent->squad_total_nen-parent->hunter.getNenAbility();
+            my_node->squad_fights_cnt = fightsHad-(parent->squad_fights_cnt);
+            return StatusType::SUCCESS;
+        }
+        return StatusType::FAILURE;
+    }
 
     output_t<int> squad_duel(int squadId1, int squadId2);
 
@@ -55,7 +77,23 @@ public:
 
     output_t<NenAbility> get_partial_nen_ability(int hunterId);
 
-    StatusType force_join(int forcingSquadId, int forcedSquadId);
+    StatusType force_join(int forcingSquadId, int forcedSquadId) {
+        //acount for empty
+        Squad squad_a = squads.find(forcingSquadId);
+        MemberNode* root_a = squad_a.representative;
+        Squad squad_b = squads.find(forcedSquadId);
+        MemberNode* root_b = squad_b.representative;
+
+        if (squad_a.getBattleValue()>squad_b.getBattleValue()) {
+            if (root_a->size>=root_b->size) {
+                
+            } else {
+
+            }
+            return StatusType::SUCCESS;
+        }
+        return StatusType::FAILURE;
+    }
 
     // } </DO-NOT-MODIFY>
 };

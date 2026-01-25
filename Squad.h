@@ -15,6 +15,7 @@ public:
     MemberNode* representative;
 
     explicit Squad(int id): squadId(id), experience(0), representative(nullptr){}
+    explicit Squad(int id, int exp): squadId(id), experience(exp), representative(nullptr){}
     ~Squad() = default;
 
     int getTotalAura() const
@@ -32,6 +33,7 @@ public:
        }
         return representative->squad_total_nen;
     }
+
     int getBattleValue()const
     {
         int val = this->experience;
@@ -42,10 +44,12 @@ public:
         }
         return val;
     }
+
     bool isEmpty() const
     {
         return representative == nullptr;
     }
+
     void addExperience(int num)
     {
         experience += num;

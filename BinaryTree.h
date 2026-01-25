@@ -156,13 +156,13 @@ protected:
     {
         remove_recursive(root,key);
     }
-    shared_ptr<Node> find(int key)const
+    T find(int key)const
     {
-        return find_recursive(root, key);
+        return find_recursive(root, key).data;
     }
 
-    shared_ptr<Node> select(int i) const {
-        return select_recursive(root, i);
+    T select(int i) const {
+        return select_recursive(root, i).data;
     }
 
     void print_in_order_recursive(const shared_ptr<Node>& node) const {
