@@ -13,6 +13,12 @@
 #ifndef HUNTECH26A2_H_
 #define HUNTECH26A2_H_
 #include "wet2util.h"
+#include "AVLTree.h"
+#include "HashMap.h"
+#include "Squad.h"
+#include "MemberNode.h"
+#include "Hunter.h"
+#include <memory>
 
 
 class Huntech {
@@ -20,6 +26,8 @@ private:
     //
     // Here you may add anything you need to implement your Huntech class
     //
+    AVLTree<Squad> squads;
+    HashMap<MemberNode*> hunters;
 
 public:
     // <DO-NOT-MODIFY> {
