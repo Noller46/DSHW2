@@ -156,7 +156,7 @@ protected:
     {
         remove_recursive(root,key);
     }
-    T find(int key)const
+    T& find(int key)const
     {
         return find_recursive(root, key).data;
     }

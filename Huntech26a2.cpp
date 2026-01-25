@@ -34,7 +34,6 @@ StatusType Huntech::remove_squad(int squadId) {
         return StatusType::INVALID_INPUT;
     try
     {
-        auto node = squads.find(squadId);
         squads.remove(squadId);
         return StatusType::SUCCESS;
     }
@@ -81,10 +80,8 @@ output_t<int> Huntech::squad_duel(int squadId1, int squadId2) {
     }
     try
     {
-        auto node1 = squads.find(squadId1);
-        auto node2 = squads.find(squadId2);
-        Squad& s1 = node1->data;
-        Squad& s2 = node2->data;
+        Squad& s1 = squads.find(squadId1);
+        Squad& s2 = squads.find(squadId2);
         if (s1.isEmpty()||s2.isEmpty())
             return output_t<int>(StatusType::FAILURE);
         int score1 = s1.representative->squad_sum_aura + s1.experience;
@@ -148,7 +145,17 @@ output_t<int> Huntech::get_hunter_fights_number(int hunterId) {
 }
 
 output_t<int> Huntech::get_squad_experience(int squadId) {
-    return 0;
+    if (squadId <= 0)
+        return output_t<int>(StatusType::FAILURE);
+    try
+    {
+        Squad& s = squads.find(squadId);
+        return output_t<int>(s.experience);
+    }
+    catch (...)
+    {
+        return output_t<int>(StatusType::FAILURE);
+    }
 }
 
 output_t<int> Huntech::get_ith_collective_aura_squad(int i) {
