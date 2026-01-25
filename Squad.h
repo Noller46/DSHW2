@@ -55,6 +55,10 @@ public:
     {
         experience += num;
     }
+    int getId() const
+    {
+        return squadId;
+    }
 };
 
 #endif //SQUAD_H
