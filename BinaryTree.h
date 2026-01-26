@@ -186,7 +186,7 @@ protected:
         return find_recursive(root, key)->data;
     }
 
-    T select(int i) const {
+    T& select(int i) const {
         return select_recursive(root, i)->data;
     }
 
