@@ -342,4 +342,3 @@ StatusType Huntech::force_join(int forcingSquadId, int forcedSquadId) {
 
     return StatusType::SUCCESS;
 }
-
