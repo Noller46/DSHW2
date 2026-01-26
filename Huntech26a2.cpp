@@ -91,6 +91,9 @@ StatusType Huntech::add_hunter(int hunterId,
     if (hunters.contains(hunterId)) {
         return StatusType::FAILURE;
     }
+    if (!squads.contains(TreeKey(squadId, squadId))) {
+        return StatusType::FAILURE;
+    }
 
     Hunter h(hunterId, nenType, aura, fightsHad);
     auto my_node = std::make_shared<MemberNode>(h);
@@ -153,6 +156,9 @@ StatusType Huntech::add_hunter(int hunterId,
 output_t<int> Huntech::squad_duel(int squadId1, int squadId2) {
     if (squadId1 <= 0 || squadId2 <= 0 || squadId1 == squadId2) {
         return StatusType::INVALID_INPUT;
+    }
+    if (!squads.contains(TreeKey(squadId1, squadId1)) || !squads.contains(TreeKey(squadId2, squadId2))) {
+        return StatusType::FAILURE;
     }
     try
     {
@@ -257,11 +263,15 @@ output_t<NenAbility> Huntech::get_partial_nen_ability(int hunterId) {
         return StatusType::INVALID_INPUT;
     try
     {
-        if (!hunters.contains(hunterId))
+        if (!hunters.contains(hunterId)) {
             return StatusType::FAILURE;
+        }
         std::shared_ptr<MemberNode> node = hunters.get(hunterId);
         FindResult res = node->find();
-        if (res.isDead) return StatusType::FAILURE;
+        if (res.isDead) {
+            //sdfghjkjhgfdsdfghjk
+            return StatusType::FAILURE;
+        }
         return output_t<NenAbility>(res.pathSum);
     }
     catch (...)
@@ -306,6 +316,7 @@ StatusType Huntech::force_join(int forcingSquadId, int forcedSquadId) {
 
     // If forced squad was non-empty, merge the DSU trees
     if (rep_b) {
+        rep_b->squad_is_dead = false;
         MemberNode* root_a = rep_a.get();
         MemberNode* root_b = rep_b.get();
 
@@ -321,8 +332,9 @@ StatusType Huntech::force_join(int forcingSquadId, int forcedSquadId) {
             root_a->squad_sum_aura += root_b->squad_sum_aura;
 
             // weighted nen update
-            root_b->r_nen += root_a->squad_total_nen - root_b->r_nen;
+            root_b->r_nen += root_a->squad_total_nen - root_a->r_nen;
             root_a->squad_total_nen += root_b->squad_total_nen;
+            root_b->squad_fights_cnt -= root_a->squad_fights_cnt;
 
             squad_a->representative = rep_a;
         } else {
@@ -334,6 +346,7 @@ StatusType Huntech::force_join(int forcingSquadId, int forcedSquadId) {
             // symmetric weighted nen update
             root_a->r_nen += root_b->squad_total_nen - root_a->r_nen;
             root_b->squad_total_nen += root_a->squad_total_nen;
+            root_a->squad_fights_cnt -= root_b->squad_fights_cnt;
 
             squad_a->representative = rep_b;
         }
@@ -343,6 +356,7 @@ StatusType Huntech::force_join(int forcingSquadId, int forcedSquadId) {
     try {
         ///--------------------------------------
         auraTree.remove(TreeKey(oldAuraA, forcingSquadId));
+        rep_a->squad_is_dead = false;
         auraTree.insert(*squad_a, TreeKey(squad_a->getTotalAura(), forcingSquadId));
     } catch (const std::bad_alloc&) {
         return StatusType::ALLOCATION_ERROR;
