@@ -12,7 +12,7 @@ class Squad
 public:
     int squadId;
     int experience;
-    MemberNode* representative;
+    shared_ptr<MemberNode> representative;
 
     explicit Squad(): squadId(0), experience(0), representative(nullptr){}
     explicit Squad(int id): squadId(id), experience(0), representative(nullptr){}
