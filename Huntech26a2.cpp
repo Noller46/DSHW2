@@ -215,6 +215,7 @@ output_t<int> Huntech::get_ith_collective_aura_squad(int i) {
         return StatusType::FAILURE;
     try
     {
+        cout << auraTree.getSize();
         if (i > auraTree.getSize())
             return StatusType::FAILURE;
         Squad foundSquad= auraTree.select(i);
