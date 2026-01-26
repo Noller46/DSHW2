@@ -44,6 +44,8 @@ StatusType Huntech::remove_squad(int squadId) {
     try {
         // 1. Find the squad
         Squad& s = squads.find(TreeKey(squadId, squadId));
+        MemberNode* root = s.representative.get();
+        if (root != nullptr){root->squad_is_dead = true;}
         int currentAura = s.getTotalAura();
 
         // 2. Remove from squads first
@@ -62,7 +64,6 @@ StatusType Huntech::remove_squad(int squadId) {
             }
             return StatusType::FAILURE;
         }
-
         return StatusType::SUCCESS;
     }
     catch (const std::bad_alloc&) {
@@ -144,14 +145,14 @@ StatusType Huntech::add_hunter(int hunterId,
 
 output_t<int> Huntech::squad_duel(int squadId1, int squadId2) {
     if (squadId1 <= 0 || squadId2 <= 0 || squadId1 == squadId2) {
-        return output_t<int>(StatusType::INVALID_INPUT);
+        return StatusType::INVALID_INPUT;
     }
     try
     {
         Squad& s1 = squads.find(TreeKey(squadId1,squadId1));
         Squad& s2 = squads.find(TreeKey(squadId2,squadId2));
         if (s1.isEmpty()||s2.isEmpty())
-            return output_t<int>(StatusType::FAILURE);
+            return StatusType::FAILURE;
         int score1 = s1.representative->squad_sum_aura + s1.experience;
         int score2 = s2.representative->squad_sum_aura + s2.experience;
         int result = 0;
@@ -191,17 +192,17 @@ output_t<int> Huntech::squad_duel(int squadId1, int squadId2) {
     }
     catch (...)
     {
-        return output_t<int>(StatusType::FAILURE);
+        return StatusType::FAILURE;
     }
 }
 
 output_t<int> Huntech::get_hunter_fights_number(int hunterId) {
     if (hunterId <= 0)
-        return output_t<int>(StatusType::INVALID_INPUT);
+        return StatusType::INVALID_INPUT;
     try
     {
         if (!hunters.contains(hunterId))
-            return output_t<int>(StatusType::FAILURE);
+            return StatusType::FAILURE;
         shared_ptr<MemberNode> node = hunters.get(hunterId);
         FindResult res = node->find();
 
@@ -209,13 +210,13 @@ output_t<int> Huntech::get_hunter_fights_number(int hunterId) {
     }
     catch (...)
     {
-        return output_t<int>(StatusType::FAILURE);
+        return StatusType::FAILURE;
     }
 }
 
 output_t<int> Huntech::get_squad_experience(int squadId) {
     if (squadId <= 0)
-        return output_t<int>(StatusType::INVALID_INPUT);
+        return StatusType::INVALID_INPUT;
     try
     {
         Squad& s = squads.find(TreeKey(squadId,squadId));
@@ -223,7 +224,7 @@ output_t<int> Huntech::get_squad_experience(int squadId) {
     }
     catch (...)
     {
-        return output_t<int>(StatusType::FAILURE);
+        return StatusType::FAILURE;
     }
 }
 
@@ -239,25 +240,26 @@ output_t<int> Huntech::get_ith_collective_aura_squad(int i) {
     }
     catch (...)
     {
-        return output_t<int>(StatusType::FAILURE);
+        return StatusType::FAILURE;
     }
     return StatusType::FAILURE;
 }
 
 output_t<NenAbility> Huntech::get_partial_nen_ability(int hunterId) {
     if (hunterId <= 0)
-        return output_t<NenAbility>(StatusType::INVALID_INPUT);
+        return StatusType::INVALID_INPUT;
     try
     {
         if (!hunters.contains(hunterId))
-            return output_t<NenAbility>(StatusType::FAILURE);
+            return StatusType::FAILURE;
         std::shared_ptr<MemberNode> node = hunters.get(hunterId);
         FindResult res = node->find();
+        if (res.isDead) return StatusType::FAILURE;
         return output_t<NenAbility>(res.pathSum);
     }
     catch (...)
     {
-        return output_t<NenAbility>(StatusType::FAILURE);
+        return StatusType::FAILURE;
     }
 }
 
