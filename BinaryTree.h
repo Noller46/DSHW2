@@ -75,7 +75,7 @@ protected:
             updateSize(node);
     }
     shared_ptr<Node> select_recursive(shared_ptr<Node> curr, int k) const {
-        if (!curr) return nullptr;
+        if (!curr) throw std::runtime_error("Tree Corruption: Size mismatch detected in select()");
         int leftSize = getSize(curr->left_son);
         int cur_rank = leftSize + 1;
         if (cur_rank == k) return curr;
