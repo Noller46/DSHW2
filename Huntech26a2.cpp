@@ -57,11 +57,12 @@ StatusType Huntech::add_hunter(int hunterId,
 {
     Hunter me = Hunter(hunterId, nenType, aura, fightsHad);
     Squad* my_squad = nullptr;
+    TreeKey my_key;
     MemberNode* my_node = new MemberNode(me);
 
     try {
         my_squad = &squads.find(TreeKey(squadId, squadId));
-        ///TreeKey my_key = TreeKey(my_squad.getTotalAura(), squadId);
+        my_key = TreeKey(my_squad->getTotalAura(), squadId);
         hunters.put(make_shared<MemberNode>(*my_node),hunterId);
     } catch (const std::invalid_argument&) {
         return StatusType::FAILURE;
@@ -89,10 +90,8 @@ StatusType Huntech::add_hunter(int hunterId,
         parent->squad_total_nen += my_node->squad_total_nen;
     }
 
-    //cout << "check 1" << endl;
-    //auraTree.remove(my_key);
-    //cout << "check 2" << endl;
-    //auraTree.insert(my_squad, TreeKey(my_squad.getTotalAura(), squadId));
+    auraTree.remove(my_key);
+    auraTree.insert(*my_squad, TreeKey(my_squad->getTotalAura(), squadId));
     return StatusType::SUCCESS;
 }
 
@@ -181,7 +180,7 @@ output_t<int> Huntech::get_squad_experience(int squadId) {
 }
 
 output_t<int> Huntech::get_ith_collective_aura_squad(int i) {
-    if (i <= 0)
+    /*if (i <= 0)
         return output_t<int>(StatusType::FAILURE);
     try
     {
@@ -193,7 +192,8 @@ output_t<int> Huntech::get_ith_collective_aura_squad(int i) {
     catch (...)
     {
         return output_t<int>(StatusType::FAILURE);
-    }
+    }*/
+    return StatusType::FAILURE;
 }
 
 output_t<NenAbility> Huntech::get_partial_nen_ability(int hunterId) {
@@ -229,7 +229,7 @@ StatusType Huntech::force_join(int forcingSquadId, int forcedSquadId) {
     MemberNode* root_a = squad_a.representative;
     MemberNode* root_b = squad_b.representative;
 
-    //TreeKey key_a = TreeKey(squad_a.getTotalAura(), forcingSquadId);
+    TreeKey key_a = TreeKey(squad_a.getTotalAura(), forcingSquadId);
     //TreeKey key_b = TreeKey(squad_b.getTotalAura(), forcedSquadId);
 
     if (!squad_a.isEmpty() && (squad_b.isEmpty() || squad_a.getBattleValue() > squad_b.getBattleValue())) {
@@ -255,9 +255,10 @@ StatusType Huntech::force_join(int forcingSquadId, int forcedSquadId) {
         }
 
         remove_squad(forcedSquadId);
-        //auraTree.remove(key_a);
-        //auraTree.remove(key_b);
-        //auraTree.insert(squad_a, TreeKey(squad_a.getTotalAura(), forcingSquadId));
+        auraTree.remove(key_a);
+        auraTree.insert(squad_a, TreeKey(squad_a.getTotalAura(), forcingSquadId));
+
+        cout << "" << endl;
 
         return StatusType::SUCCESS;
     }
