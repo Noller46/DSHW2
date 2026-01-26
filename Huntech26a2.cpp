@@ -2,6 +2,9 @@
 // However, you need to implement all public Huntech functions, which are provided below as a template.
 
 #include "Huntech26a2.h"
+#include <cassert>
+#include <iostream>
+
 
 Huntech::Huntech() = default;
 
@@ -35,11 +38,16 @@ StatusType Huntech::remove_squad(int squadId) {
         return StatusType::INVALID_INPUT;
     try
     {
+        // get the actual squad in the tree
         Squad& s = squads.find(TreeKey(squadId,squadId));
-        int currentAura = 0;
-        if (!s.isEmpty())
-            currentAura = s.representative->squad_sum_aura;
+
+        // compute current aura using the latest getTotalAura() instead of representative->squad_sum_aura
+        int currentAura = s.getTotalAura();
+
+        // remove from aura tree
         auraTree.remove(TreeKey(currentAura,squadId));
+
+        // remove from squads tree
         squads.remove(TreeKey(squadId,squadId));
         return StatusType::SUCCESS;
     }
@@ -228,9 +236,7 @@ StatusType Huntech::force_join(int forcingSquadId, int forcedSquadId) {
     }
     MemberNode* root_a = squad_a->representative;
     MemberNode* root_b = squad_b->representative;
-
-    TreeKey key_a = TreeKey(squad_a->getTotalAura(), forcingSquadId);
-    //TreeKey key_b = TreeKey(squad_b.getTotalAura(), forcedSquadId);
+    int oldAura = squad_a->getTotalAura();
 
     if (!squad_a->isEmpty() && (squad_b->isEmpty() || squad_a->getBattleValue() > squad_b->getBattleValue())) {
         if (root_a->size>=root_b->size) {
@@ -254,11 +260,11 @@ StatusType Huntech::force_join(int forcingSquadId, int forcedSquadId) {
             squad_a->representative = root_b;
         }
 
-        remove_squad(forcedSquadId);
-        auraTree.remove(key_a);
-        auraTree.insert(*squad_a, TreeKey(squad_a->getTotalAura(), forcingSquadId));
 
-        cout << "" << endl;
+
+        remove_squad(forcedSquadId);  // remove loser squad
+        auraTree.remove(TreeKey(oldAura, forcingSquadId)); // remove old aura key
+        auraTree.insert(*squad_a, TreeKey(squad_a->getTotalAura(), forcingSquadId));
 
         return StatusType::SUCCESS;
     }
