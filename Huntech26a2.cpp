@@ -196,7 +196,20 @@ output_t<int> Huntech::get_ith_collective_aura_squad(int i) {
 }
 
 output_t<NenAbility> Huntech::get_partial_nen_ability(int hunterId) {
-    return NenAbility();
+    if (hunterId <= 0)
+        return output_t<NenAbility>(StatusType::INVALID_INPUT);
+    try
+    {
+        if (!hunters.contains(hunterId))
+            return output_t<NenAbility>(StatusType::FAILURE);
+        std::shared_ptr<MemberNode> node = hunters.get(hunterId);
+        FindResult res = node->find();
+        return output_t<NenAbility>(res.pathSum);
+    }
+    catch (...)
+    {
+        return output_t<NenAbility>(StatusType::FAILURE);
+    }
 }
 
 StatusType Huntech::force_join(int forcingSquadId, int forcedSquadId) {
