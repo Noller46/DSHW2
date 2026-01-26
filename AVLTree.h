@@ -14,6 +14,22 @@ class AVLTree : public BinaryTree<T> {
     if(!node) return 0;
     return this->getHeight(node->left_son)-this->getHeight(node->right_son);
   }
+
+  void fix_upwards(shared_ptr<Node> node) {
+    while (node) {
+      this->updateNodeData(node);
+      node = node->parent.lock();
+    }
+  }
+
+  void recompute_subtree(shared_ptr<Node> node) {
+    if (!node) return;
+    recompute_subtree(node->left_son);
+    recompute_subtree(node->right_son);
+    this->updateNodeData(node);
+  }
+
+
   shared_ptr<Node> rotate_left(shared_ptr<Node>& a)
   {
     if (!a || !a->right_son)
@@ -106,24 +122,26 @@ class AVLTree : public BinaryTree<T> {
       node = rotate_left(node);
     }
   }
-  bool insert_recursive(shared_ptr<Node>& curr, const T& val, TreeKey key, weak_ptr<Node> parent) override
-  {
+
+  bool insert_recursive(shared_ptr<Node>& curr, const T& val, TreeKey key, weak_ptr<Node> parent) override {
     bool ret = BinaryTree<T>::insert_recursive(curr, val, key, parent);
-    if (curr)
-    {
+    if (curr) {
       balance(curr);
+      recompute_subtree(curr);
     }
     return ret;
   }
-  bool remove_recursive(shared_ptr<Node>& curr, TreeKey key)override
-  {
+
+  bool remove_recursive(shared_ptr<Node>& curr, TreeKey key) override {
     bool ret = BinaryTree<T>::remove_recursive(curr, key);
-    if (curr)
-    {
+    if (curr) {
       balance(curr);
+      recompute_subtree(curr);
     }
     return ret;
   }
+
+
 public:
   AVLTree() = default;
   ~AVLTree() override = default;

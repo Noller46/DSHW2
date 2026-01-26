@@ -13,49 +13,66 @@ Huntech::~Huntech() = default;
 StatusType Huntech::add_squad(int squadId) {
     if (squadId <= 0)
         return StatusType::INVALID_INPUT;
-    try
-    {
-        Squad newSquad(squadId);
-        squads.insert(newSquad,TreeKey(squadId,squadId));
-        auraTree.insert(newSquad,TreeKey(0,squadId));
+
+    Squad newSquad(squadId);
+
+    try {
+        // 1. Insert into auraTree first (safe: no rollback needed if it fails)
+        auraTree.insert(newSquad, TreeKey(0, squadId));
+
+        // 2. Now insert into squads
+        squads.insert(newSquad, TreeKey(squadId, squadId));
+
         return StatusType::SUCCESS;
-    }
-    catch (const std::bad_alloc&)
-    {
-        return StatusType::ALLOCATION_ERROR;
-    }
-    catch (const std::invalid_argument&)
-    {
-        return StatusType::FAILURE;
-    }
-    catch (...){
+    } catch (...) {
+        // If squads.insert throws, auraTree already contains the squad.
+        // We must roll it back.
+        try {
+            auraTree.remove(TreeKey(0, squadId));
+        } catch (...) {
+            // If rollback fails, we still return FAILURE.
+        }
         return StatusType::FAILURE;
     }
 }
+
 
 StatusType Huntech::remove_squad(int squadId) {
     if (squadId <= 0)
         return StatusType::INVALID_INPUT;
-    try
-    {
-        // get the actual squad in the tree
-        Squad& s = squads.find(TreeKey(squadId,squadId));
 
-        // compute current aura using the latest getTotalAura() instead of representative->squad_sum_aura
+    try {
+        // 1. Find the squad
+        Squad& s = squads.find(TreeKey(squadId, squadId));
         int currentAura = s.getTotalAura();
 
-        // remove from aura tree
-        auraTree.remove(TreeKey(currentAura,squadId));
+        // 2. Remove from squads first
+        squads.remove(TreeKey(squadId, squadId));
 
-        // remove from squads tree
-        squads.remove(TreeKey(squadId,squadId));
+        // 3. Now remove from auraTree
+        try {
+            auraTree.remove(TreeKey(currentAura, squadId));
+        }
+        catch (...) {
+            // rollback squads.remove
+            try {
+                squads.insert(s, TreeKey(squadId, squadId));
+            } catch (...) {
+                // catastrophic but nothing more we can do
+            }
+            return StatusType::FAILURE;
+        }
+
         return StatusType::SUCCESS;
     }
-    catch (...)
-    {
+    catch (const std::bad_alloc&) {
+        return StatusType::ALLOCATION_ERROR;
+    }
+    catch (...) {
         return StatusType::FAILURE;
     }
 }
+
 
 StatusType Huntech::add_hunter(int hunterId,
                                int squadId,
@@ -114,8 +131,8 @@ StatusType Huntech::add_hunter(int hunterId,
 
     // Step 3: Update aura tree safely
     try {
-        auraTree.remove(old_key);
         auraTree.insert(*my_squad, TreeKey(my_squad->getTotalAura(), squadId));
+        auraTree.remove(old_key);
     } catch (const std::bad_alloc&) {
         return StatusType::ALLOCATION_ERROR;
     } catch (...) {
@@ -215,7 +232,6 @@ output_t<int> Huntech::get_ith_collective_aura_squad(int i) {
         return StatusType::FAILURE;
     try
     {
-        cout << auraTree.getSize();
         if (i > auraTree.getSize())
             return StatusType::FAILURE;
         Squad foundSquad= auraTree.select(i);
@@ -316,8 +332,8 @@ StatusType Huntech::force_join(int forcingSquadId, int forcedSquadId) {
 
     // Update auraTree entry for the forcing squad
     try {
-        auraTree.remove(TreeKey(oldAuraA, forcingSquadId));
         auraTree.insert(*squad_a, TreeKey(squad_a->getTotalAura(), forcingSquadId));
+        auraTree.remove(TreeKey(oldAuraA, forcingSquadId));
     } catch (const std::bad_alloc&) {
         return StatusType::ALLOCATION_ERROR;
     } catch (...) {

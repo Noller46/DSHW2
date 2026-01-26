@@ -173,6 +173,13 @@ protected:
     {
         return getSize(root);
     }
+
+    int recomputeSize(const shared_ptr<Node>& node) const {
+        if (!node) return 0;
+        return 1 + recomputeSize(node->left_son) + recomputeSize(node->right_son);
+    }
+
+
     virtual void insert(const T& val, TreeKey key)
     {
         insert_recursive(root, val, key, weak_ptr<Node>());
