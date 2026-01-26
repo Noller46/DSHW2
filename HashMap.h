@@ -142,7 +142,7 @@ public:
 
         count += 1;
 
-        if ((double)count / length >= 0.75 || depth > 100) {
+        if ((double)count / length >= 0.25 || depth > 3) {
             resize();
         }
     }

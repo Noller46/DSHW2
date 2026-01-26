@@ -211,19 +211,19 @@ output_t<int> Huntech::get_squad_experience(int squadId) {
 }
 
 output_t<int> Huntech::get_ith_collective_aura_squad(int i) {
-    /*if (i <= 0)
-        return output_t<int>(StatusType::FAILURE);
+    if (i <= 0)
+        return StatusType::FAILURE;
     try
     {
         if (i > auraTree.getSize())
-            return output_t<int>(StatusType::FAILURE);
+            return StatusType::FAILURE;
         Squad foundSquad= auraTree.select(i);
         return output_t<int>(foundSquad.getId());
     }
     catch (...)
     {
         return output_t<int>(StatusType::FAILURE);
-    }*/
+    }
     return StatusType::FAILURE;
 }
 
