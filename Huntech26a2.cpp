@@ -66,6 +66,7 @@ StatusType Huntech::remove_squad(int squadId) {
             } catch (...) {
                 // catastrophic but nothing more we can do
             }
+            cout << "check 1 : " << currentAura << ": ";
             return StatusType::FAILURE;
         }
         return StatusType::SUCCESS;
@@ -74,6 +75,7 @@ StatusType Huntech::remove_squad(int squadId) {
         return StatusType::ALLOCATION_ERROR;
     }
     catch (...) {
+        //cout << "check 2 you are pagar: ";
         return StatusType::FAILURE;
     }
 }
@@ -135,7 +137,7 @@ StatusType Huntech::add_hunter(int hunterId,
         parent->squad_sum_aura += aura;
 
         my_node->squad_fights_cnt = -parent->squad_fights_cnt;
-        my_node->r_nen = nenType + parent->squad_total_nen - parent->hunter.getNenAbility();
+        my_node->r_nen = nenType + parent->squad_total_nen - parent->r_nen;
         parent->squad_total_nen += nenType;
     }
 
@@ -146,6 +148,7 @@ StatusType Huntech::add_hunter(int hunterId,
     } catch (const std::bad_alloc&) {
         return StatusType::ALLOCATION_ERROR;
     } catch (...) {
+        cout << "check this ";
         return StatusType::FAILURE;
     }
 
@@ -160,6 +163,7 @@ output_t<int> Huntech::squad_duel(int squadId1, int squadId2) {
     if (!squads.contains(TreeKey(squadId1, squadId1)) || !squads.contains(TreeKey(squadId2, squadId2))) {
         return StatusType::FAILURE;
     }
+
     try
     {
         Squad& s1 = squads.find(TreeKey(squadId1,squadId1));
@@ -201,6 +205,7 @@ output_t<int> Huntech::squad_duel(int squadId1, int squadId2) {
         }
         s1.representative->squad_fights_cnt++;
         s2.representative->squad_fights_cnt++;
+
         return output_t<int>(result);
     }
     catch (...)
@@ -295,6 +300,15 @@ StatusType Huntech::force_join(int forcingSquadId, int forcedSquadId) {
         return StatusType::FAILURE;
     }
 
+    /*if (forcingSquadId == 3311 || forcedSquadId == 2412) {
+        cout << "fighting power: " << squad_a->getBattleValue() << " " << squad_b->getBattleValue() << endl;
+        cout << "ID: " << forcingSquadId << " " << forcedSquadId << endl;
+        cout << "squad exp " << squad_a->experience << " " << squad_b->experience << endl;
+        cout << "squad aura " << squad_a->getTotalAura() << " " << squad_b->getTotalAura() << endl;
+        cout << "squad nen " << squad_a->getTotalNen().getEffectiveNenAbility() << " " << squad_b->getTotalNen().getEffectiveNenAbility() << endl;
+
+    }*/
+
     // Battle condition
     if (squad_a->isEmpty() ||
         (!squad_b->isEmpty() && squad_a->getBattleValue() <= squad_b->getBattleValue())) {
@@ -308,6 +322,16 @@ StatusType Huntech::force_join(int forcingSquadId, int forcedSquadId) {
     std::shared_ptr<MemberNode> rep_a = squad_a->representative;
     std::shared_ptr<MemberNode> rep_b = squad_b->representative; // may be null if empty
 
+    if (forcingSquadId == 27412 || forcedSquadId == 27412) {
+        cout << "fighting power: " << squad_a->getBattleValue() << " " << squad_b->getBattleValue() << endl;
+        cout << "ID: " << forcingSquadId << " " << forcedSquadId << endl;
+        cout << "squad exp " << squad_a->experience << " " << squad_b->experience << endl;
+        cout << "squad aura " << squad_a->getTotalAura() << " " << squad_b->getTotalAura() << endl;
+        cout << "squad nen " << squad_a->getTotalNen().getEffectiveNenAbility() << " " << squad_b->getTotalNen().getEffectiveNenAbility() << endl;
+
+    }
+
+    squad_a->experience += squad_b->experience;
     // Remove forced squad from trees while its aura key is still correct
     StatusType rem = remove_squad(forcedSquadId);
     if (rem != StatusType::SUCCESS) {
@@ -332,11 +356,10 @@ StatusType Huntech::force_join(int forcingSquadId, int forcedSquadId) {
             root_a->squad_sum_aura += root_b->squad_sum_aura;
 
             // weighted nen update
-            root_b->r_nen += root_a->squad_total_nen - root_a->r_nen;
+            root_b->r_nen += root_a->squad_total_nen;
+            root_b->r_nen -= root_a->r_nen;
             root_a->squad_total_nen += root_b->squad_total_nen;
             root_b->squad_fights_cnt -= root_a->squad_fights_cnt;
-
-            squad_a->representative = rep_a;
         } else {
             // root_b becomes root
             root_a->parent = root_b;
@@ -344,7 +367,8 @@ StatusType Huntech::force_join(int forcingSquadId, int forcedSquadId) {
             root_b->squad_sum_aura += root_a->squad_sum_aura;
 
             // symmetric weighted nen update
-            root_a->r_nen += root_b->squad_total_nen - root_a->r_nen;
+            root_b->r_nen += root_a->squad_total_nen;
+            root_a->r_nen -= root_b->r_nen;
             root_b->squad_total_nen += root_a->squad_total_nen;
             root_a->squad_fights_cnt -= root_b->squad_fights_cnt;
 
@@ -358,10 +382,25 @@ StatusType Huntech::force_join(int forcingSquadId, int forcedSquadId) {
         auraTree.remove(TreeKey(oldAuraA, forcingSquadId));
         rep_a->squad_is_dead = false;
         auraTree.insert(*squad_a, TreeKey(squad_a->getTotalAura(), forcingSquadId));
+
+        if (forcingSquadId == 27412) {
+
+            cout << "squad aura wruite somthing" << squad_a->getTotalAura() << endl;
+
+        }
     } catch (const std::bad_alloc&) {
         return StatusType::ALLOCATION_ERROR;
     } catch (...) {
         return StatusType::FAILURE;
+    }
+
+    if (forcingSquadId == 27412) {
+        cout << "fighting power: " << squad_a->getBattleValue() << endl;
+        cout << "ID: " << forcingSquadId << endl;
+        cout << "squad exp " << squad_a->experience << endl;
+        cout << "squad aura " << squad_a->getTotalAura() << endl;
+        cout << "squad nen " << squad_a->getTotalNen().getEffectiveNenAbility() << endl;
+
     }
 
     return StatusType::SUCCESS;
