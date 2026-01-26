@@ -82,17 +82,6 @@ protected:
         if (cur_rank > k)  return select_recursive(curr->left_son, k);
         return select_recursive(curr->right_son, k - cur_rank);
     }
-    /*
-    template<typename U>
-    static const U& unwrap(const U& v) { return v; }
-
-    template<typename U>
-    static const U& unwrap(const std::shared_ptr<U>& p) { return *p; }
-
-    template<typename U>
-    static const U& unwrap(const std::unique_ptr<U>& p) { return *p; }
-*/
-
 
     virtual bool insert_recursive(shared_ptr<Node>& curr, const T& val, TreeKey key, weak_ptr<Node> parent){
         if (!curr) {
@@ -165,6 +154,17 @@ protected:
             return find_recursive(curr->right_son,key);
         return curr;
     }
+    bool contains_recursive(const shared_ptr<Node>& curr, TreeKey key)const
+    {
+        if (!curr)
+            return false;
+        TreeKey currKey = curr->key;
+        if (currKey > key)
+            return contains_recursive(curr->left_son,key);
+        if (currKey < key)
+            return contains_recursive(curr->right_son,key);
+        return true;
+    }
     public:
     BinaryTree():root(nullptr){}
     virtual ~BinaryTree() = default;
@@ -184,10 +184,16 @@ protected:
     {
         insert_recursive(root, val, key, weak_ptr<Node>());
     }
+
+    virtual bool contains(TreeKey key) {
+        return contains_recursive(root, key);
+    }
+
     virtual void remove(TreeKey key)
     {
         remove_recursive(root,key);
     }
+
     T& find(TreeKey key)const
     {
         return find_recursive(root, key)->data;

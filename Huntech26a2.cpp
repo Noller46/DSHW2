@@ -16,6 +16,10 @@ StatusType Huntech::add_squad(int squadId) {
 
     Squad newSquad(squadId);
 
+    if (squads.contains(TreeKey(squadId, squadId))) {
+        return StatusType::FAILURE;
+    }
+
     try {
         // 1. Insert into auraTree first (safe: no rollback needed if it fails)
         auraTree.insert(newSquad, TreeKey(0, squadId));
@@ -83,6 +87,9 @@ StatusType Huntech::add_hunter(int hunterId,
 {
     if (hunterId <= 0 || squadId <= 0 || fightsHad < 0 || aura < 0) {
         return StatusType::INVALID_INPUT;
+    }
+    if (hunters.contains(hunterId)) {
+        return StatusType::FAILURE;
     }
 
     Hunter h(hunterId, nenType, aura, fightsHad);

@@ -47,6 +47,8 @@ public:
 
         parent = res.root;
 
+        squad_is_dead = res.isDead;
+
         r_nen += res.pathSum;
         NenAbility myTotalNen = r_nen; //total to root
         r_nen -= res.root->r_nen; //delta relative to root
