@@ -39,7 +39,7 @@ public:
     FindResult find()
     {
         if (parent == nullptr)
-            return FindResult(this, squad_total_nen,squad_fights_cnt);
+            return FindResult(this, r_nen, squad_fights_cnt);
 
         FindResult res = parent->find();
 

@@ -15,5 +15,6 @@ public:
 
     int getAura() const {return aura;}
     NenAbility getNenAbility(){return nenA;}
+    int getFightsHad(){return fightsHad;}
 };
 #endif //HUNTER_H

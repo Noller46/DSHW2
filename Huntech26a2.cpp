@@ -112,7 +112,6 @@ StatusType Huntech::add_hunter(int hunterId,
         my_squad->representative = my_node;
         my_node->squad_sum_aura = aura;
         my_node->squad_total_nen = nenType;
-        my_node->size = 1;
     } else {
         MemberNode* parent = my_squad->representative.get();
         if (!parent) {
@@ -124,7 +123,7 @@ StatusType Huntech::add_hunter(int hunterId,
         parent->size += 1;
         parent->squad_sum_aura += aura;
 
-        my_node->squad_fights_cnt = fightsHad - parent->squad_fights_cnt;
+        my_node->squad_fights_cnt = -parent->squad_fights_cnt;
         my_node->r_nen = nenType + parent->squad_total_nen - parent->hunter.getNenAbility();
         parent->squad_total_nen += nenType;
     }
@@ -203,9 +202,10 @@ output_t<int> Huntech::get_hunter_fights_number(int hunterId) {
     {
         if (!hunters.contains(hunterId))
             return output_t<int>(StatusType::FAILURE);
-        std::shared_ptr<MemberNode> node = hunters.get(hunterId);
+        shared_ptr<MemberNode> node = hunters.get(hunterId);
         FindResult res = node->find();
-        return output_t<int>(res.pathFights);
+
+        return output_t<int>(res.pathFights + node->hunter.getFightsHad());
     }
     catch (...)
     {
@@ -332,8 +332,9 @@ StatusType Huntech::force_join(int forcingSquadId, int forcedSquadId) {
 
     // Update auraTree entry for the forcing squad
     try {
-        auraTree.insert(*squad_a, TreeKey(squad_a->getTotalAura(), forcingSquadId));
+        ///--------------------------------------
         auraTree.remove(TreeKey(oldAuraA, forcingSquadId));
+        auraTree.insert(*squad_a, TreeKey(squad_a->getTotalAura(), forcingSquadId));
     } catch (const std::bad_alloc&) {
         return StatusType::ALLOCATION_ERROR;
     } catch (...) {
